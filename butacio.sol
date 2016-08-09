@@ -7,7 +7,6 @@ contract Butacio{
     }
     
     struct Event {
-        address manager;
         uint numTickets;
         uint endDate;
         Ticket[] tickets; // ticket ID to the owner of that ticket
@@ -21,7 +20,7 @@ contract Butacio{
     //mapping(address => uint[]) eventsPerManager; // ID of the events owned by a manager
     //mapping(address => uint[][]) ticketsPerUser; // ID of the tickets per event owned by a user. TODO
     
-    event e_NewEvent(uint eventId, uint numTickets, address manager);
+    event e_NewEvent(uint eventId, uint numTickets);
     event e_NewEventEndDate(uint eventId, uint date);
     event e_NewTicketOwner(uint eventId, uint ticketId, address newOwner);
     event e_TicketUsed(uint eventId, uint ticketId, address user);
@@ -34,46 +33,40 @@ contract Butacio{
     }
     
     modifier only_admin() {
-        if (msg.sender == owner) _
-    }
-    
-    /*
-    modifier events_limit(uint eventId) {
-        if (numEvents > eventId) _
-    }
-    
-    modifier tickets_limit(uint eventId, uint ticketId) {
-        if (events[eventId].numTickets > ticketId) _
-    }
-    */
-    modifier only_event_manager(uint eventId) {
-        if (events[eventId].manager == msg.sender) _
+        if (msg.sender != owner) throw;
+        _
     }
     
     modifier only_ticket_owner(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].owner == msg.sender) _
+        if (events[eventId].tickets[ticketId].owner != msg.sender) throw;
+        _
     }
     
     modifier only_new_tickets(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].owner == 0) _
+        if (events[eventId].tickets[ticketId].owner != 0)  throw;
+        _
     }
     
     modifier only_unused_tickets(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].used == false) _
+        if (events[eventId].tickets[ticketId].used == true)  throw;
+        _
     }
     
     modifier only_active_events(uint eventId) {
-        if (events[eventId].endDate > now) _
+        if (events[eventId].endDate < now)  throw;
+        _
     }
     
     modifier only_tickets_on_exchange(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].exchange == true) _
+        if (events[eventId].tickets[ticketId].exchange == false)  throw;
+        _
     }
     
-    function newEvent(uint _numTickets, uint _endDate){
+    function newEvent(uint _numTickets, uint _endDate)
+        only_admin()
+    {
         // Create the event
         Event e = ev;
-        e.manager = msg.sender;
         e.numTickets = _numTickets;
         e.endDate = _endDate;
         e.tickets.length = _numTickets;
@@ -81,13 +74,11 @@ contract Butacio{
         uint eventId = events.push(e);
         numEvents++;
         
-        //eventsPerManager[msg.sender].push(eventId);
-        
-        e_NewEvent(eventId, _numTickets, msg.sender);
+        e_NewEvent(eventId, _numTickets);
     }
     
     function changeEventEndDate(uint eventId, uint newEndDate)
-        only_event_manager(eventId)
+        only_admin()
         only_active_events(eventId)
     {
         events[eventId].endDate = newEndDate;

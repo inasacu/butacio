@@ -20,3 +20,5 @@ Exchange no
 
 Mandar ticket entre usuarios, pero hace falta la validación de admin (previo pago por fuera de la cadena de bloques) [i.e. El usuario solicita mover un token, nosotros lo movemos desde admin]
 // Fuera del contrato habría una base de datos con datos de los usuarios y su dirección de Ethereum. Nos interesa que los usuarios sólo puedan mandarse transacciones a direcciones que tengamos identificadas, para la trazabilidad.
+
+token interno que representa euros (?) para que las páginas de entradas se organicen después.

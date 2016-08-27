@@ -2,8 +2,8 @@ contract Butacio{
     struct Ticket {
         address owner;
         bool used;
-        bool exchange;
-        uint exchangePrice; // in cents of euro
+        uint price;
+        bool onSale;
     }
     
     struct Event {
@@ -11,138 +11,144 @@ contract Butacio{
         uint endDate;
         Ticket[] tickets; // ticket ID to the owner of that ticket
     }
+    
     Event ev; // to initialize events
     
-    address public owner;
-    uint public numEvents;
-    Event[] public events;
+    address _owner;
+    uint _numEvents;
+    Event[] _events;
     
-    //mapping(address => uint[]) eventsPerManager; // ID of the events owned by a manager
-    //mapping(address => uint[][]) ticketsPerUser; // ID of the tickets per event owned by a user. TODO
+    // Tokens to exchange to EUR
+    ButacioToken tokens = new ButacioToken();
     
-    event e_NewEvent(uint eventId, uint numTickets);
-    event e_NewEventEndDate(uint eventId, uint date);
-    event e_NewTicketOwner(uint eventId, uint ticketId, address newOwner);
-    event e_TicketUsed(uint eventId, uint ticketId, address user);
-    event e_TicketSentToExchange(uint eventId, uint ticketId, uint price);
-    event e_TicketSoldFromExchange(uint eventId, uint ticketId, uint price);
-    event e_TicketRemovedFromExchange(uint eventId, uint ticketId);
+    event ev_NewEvent(uint eventId, uint numTickets, address manager);
+    event ev_TicketOnSale(uint eventId, uint ticketId, uint price);
+    event ev_CancelTicketSale(uint eventId, uint ticketId);
+    event ev_NewTicketOwner(uint eventId, uint ticketId, address newOwner, uint price);
+    event ev_TicketUsed(uint eventId, uint ticketId, address buyer);
     
     function Butacio() {
-        owner = msg.sender;
+        _owner = msg.sender;
     }
     
-    modifier only_admin() {
-        if (msg.sender != owner) throw;
+    modifier only_owner() {
+        if (msg.sender != _owner) throw;
+        _
+    }
+    
+    modifier events_limit(uint eventId) {
+        if (_numEvents <= eventId) throw;
+        _
+    }
+    
+    modifier tickets_limit(uint eventId, uint ticketId) {
+        if (_events[eventId].numTickets <= ticketId) throw;
         _
     }
     
     modifier only_ticket_owner(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].owner != msg.sender) throw;
-        _
-    }
-    
-    modifier only_new_tickets(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].owner != 0)  throw;
+        if (_events[eventId].tickets[ticketId].owner != msg.sender) throw;
         _
     }
     
     modifier only_unused_tickets(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].used == true)  throw;
+        if (_events[eventId].tickets[ticketId].used == true) throw;
+        _
+    }
+    
+    modifier only_tickets_on_sale(uint eventId, uint ticketId) {
+        if (_events[eventId].tickets[ticketId].onSale == false) throw;
         _
     }
     
     modifier only_active_events(uint eventId) {
-        if (events[eventId].endDate < now)  throw;
+        if (_events[eventId].endDate < now) throw;
         _
     }
     
-    modifier only_tickets_on_exchange(uint eventId, uint ticketId) {
-        if (events[eventId].tickets[ticketId].exchange == false)  throw;
-        _
-    }
-    
-    function newEvent(uint _numTickets, uint _endDate)
-        only_admin()
-    {
+    // It will proabably fail when there are too many tickets (gas)
+    function newEvent(uint _numTickets, uint _endDate, uint[] prices) {
+        if(_numTickets != prices.length)
+            throw;
+        
         // Create the event
         Event e = ev;
         e.numTickets = _numTickets;
         e.endDate = _endDate;
         e.tickets.length = _numTickets;
         
-        uint eventId = events.push(e);
-        numEvents++;
+        // Create the tickets
+        for(uint i = 0; i < _numTickets; i++){
+            e.tickets[i].owner = msg.sender;
+            e.tickets[i].price = prices[i];
+            e.tickets[i].onSale = true;
+        }
         
-        e_NewEvent(eventId, _numTickets);
+        uint eventId = _events.push(e);
+        _numEvents++;
+        
+        ev_NewEvent(eventId, _numTickets, msg.sender);
     }
     
+    // Quien
     function changeEventEndDate(uint eventId, uint newEndDate)
-        only_admin()
+        only_owner()
         only_active_events(eventId)
     {
-        events[eventId].endDate = newEndDate;
-        
-        e_NewEventEndDate(eventId, newEndDate);
+        _events[eventId].endDate = newEndDate;
     }
     
-    function sellTicket(uint eventId, uint ticketId, address newOwner)
-        only_admin()
-        only_active_events(eventId)
-        only_new_tickets(eventId, ticketId)
+    function buyTicket(uint eventId, uint ticketId)
+        events_limit(eventId)
+        tickets_limit(eventId, ticketId)
+        only_tickets_on_sale(eventId, ticketId)
     {
-        events[eventId].tickets[ticketId].owner = newOwner;
+        address ticketOwner = _events[eventId].tickets[ticketId].owner;
+        uint ticketPrice = _events[eventId].tickets[ticketId].price;
         
-        e_NewTicketOwner(eventId, ticketId, newOwner);
+        if (tokens.transfer(ticketOwner, ticketPrice)) {
+            _events[eventId].tickets[ticketId].owner = msg.sender;
+            
+            ev_NewTicketOwner(eventId, ticketId, msg.sender, msg.value);
+        }else{
+            throw;
+        }
     }
     
-    function sendTicketToExchange(uint eventId, uint ticketId, uint price)
+    function sellTicket(uint eventId, uint ticketId, uint price)
         only_ticket_owner(eventId, ticketId)
         only_unused_tickets(eventId, ticketId)
-        only_active_events(eventId)
     {
-        events[eventId].tickets[ticketId].exchange = true;
-        events[eventId].tickets[ticketId].exchangePrice = price;
+        _events[eventId].tickets[ticketId].price = price;
+        _events[eventId].tickets[ticketId].onSale = true;
         
-        e_TicketSentToExchange(eventId, ticketId, price);
+        ev_TicketOnSale(eventId, ticketId, price);
     }
     
-    function sellTicketFromExchange(uint eventId, uint ticketId, address newOwner)
-        only_admin()
-        only_tickets_on_exchange(eventId, ticketId)
-    {
-        events[eventId].tickets[ticketId].owner = newOwner;
-        events[eventId].tickets[ticketId].exchange = false;
-        
-        e_TicketSoldFromExchange(eventId, ticketId, events[eventId].tickets[ticketId].exchangePrice);
-        e_NewTicketOwner(eventId, ticketId, newOwner);
-    }
-    
-    function removeTicketFromExchange(uint eventId, uint ticketId)
+    function cancelTicketSale(uint eventId, uint ticketId)
         only_ticket_owner(eventId, ticketId)
-        only_unused_tickets(eventId, ticketId)
-        only_active_events(eventId)
     {
-        events[eventId].tickets[ticketId].exchange = false;
+        _events[eventId].tickets[ticketId].onSale = false;
         
-        e_TicketRemovedFromExchange(eventId, ticketId);
+        ev_CancelTicketSale(eventId, ticketId);
     }
-    /*
+    
     function sendTicket(uint eventId, uint ticketId, address newOwner)
         only_ticket_owner(eventId, ticketId)
         only_unused_tickets(eventId, ticketId)
     {
-        events[eventId].tickets[ticketId].owner = newOwner;
+        _events[eventId].tickets[ticketId].owner = newOwner;
         
-        e_NewTicketOwner(eventId, ticketId, newOwner, false);
+        ev_NewTicketOwner(eventId, ticketId, msg.sender, 0);
     }
-    */
+    
     function useTicket(uint eventId, uint ticketId)
         only_ticket_owner(eventId, ticketId)
         only_unused_tickets(eventId, ticketId)
     {
-        events[eventId].tickets[ticketId].used = true;
+        _events[eventId].tickets[ticketId].used = true;
+        _events[eventId].tickets[ticketId].onSale = false;
         
-        e_TicketUsed(eventId, ticketId, msg.sender);
+        ev_TicketUsed(eventId, ticketId, msg.sender);
     }
 }

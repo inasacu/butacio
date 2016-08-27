@@ -1,5 +1,8 @@
 # butacio
 
+Dudas:
+- Vender tickets de eventos acabados? (sin usar)
+
 Los eventos los crea admin
 
 No hay manager de evento

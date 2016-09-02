@@ -1,0 +1,19 @@
+body {
+	background-color: #F0F0F0;
+	font-size: 12px;
+}
+
+.screen {
+	height: 500px;
+	overflow: auto;
+  border-radius: 5px;
+	border: 1px solid black;
+	margin: 10px;
+  padding: 5px;
+  background-color: #FAFAFA;
+}
+
+#myTticketsTable > tbody{
+	cursor: pointer;
+	cursor: hand;
+}

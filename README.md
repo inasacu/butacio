@@ -19,5 +19,6 @@
 * ...
 
 ## TODO
-* Mejorar la documentación técnica
+* Mejorar la documentación técnica (arquitectura, funcionalidades, etc.)
 * Fases 2+
+* ...

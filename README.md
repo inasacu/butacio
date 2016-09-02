@@ -1,27 +1,23 @@
-# butacio
+# Butacio
 
-Dudas:
-- Vender tickets de eventos acabados? (sin usar)
+## Directorios
+* **Dev**: Código de los diferentes módulos que compondrán la aplicación final. Bien documentado y con tests.
+* **Fase *n***: Prototipos "para enseñar" correspondientes a las diferentes fases del proyecto. La documentación es secundaria, con que se ejecute y cumpla su función de enseñar la funcionalidad, basta.
 
-Los eventos los crea admin
+## Fases
+1. Vender tickets, transferirlos y usarlos. No es necesario Ether ni tokens adicionales.
+2. ButacioTokens, pagos P2P
+3. Marketplace
+4. ...
 
-No hay manager de evento
+## Funcionalidades adicionales
+* Anular ticket digital tras compra tradicional (abuelo de 70 años)
+* Whitelist
+* Roles (manager, proveedores, vendedores de entradas, etc.)
+* Reajustar aforo
+* Redistribución de asientos
+* ...
 
-El cambio de fecha de evento lo hace el admin
-
-Ampliar el número de tickets del evento lo hace admin
-
-Reducir el número de tickets del evento lo hace el admin (opcional)
-
-Cambiar a un usuario de sitio antes del evento lo hace el admin (redistribución, opcional)
-
-sellTicket se queda igual
-
-useTicket queda igual
-
-Exchange no
-
-Mandar ticket entre usuarios, pero hace falta la validación de admin (previo pago por fuera de la cadena de bloques) [i.e. El usuario solicita mover un token, nosotros lo movemos desde admin]
-// Fuera del contrato habría una base de datos con datos de los usuarios y su dirección de Ethereum. Nos interesa que los usuarios sólo puedan mandarse transacciones a direcciones que tengamos identificadas, para la trazabilidad.
-
-token interno que representa euros (?) para que las páginas de entradas se organicen después.
+## TODO
+Mejorar la documentación técnica
+Fases 2+

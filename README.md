@@ -19,5 +19,5 @@
 * ...
 
 ## TODO
-Mejorar la documentación técnica
-Fases 2+
+* Mejorar la documentación técnica
+* Fases 2+

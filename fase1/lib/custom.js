@@ -10,6 +10,20 @@ var abi = [ { "constant": false, "inputs": [ { "name": "ticketId", "type": "uint
 var MyContract = web3.eth.contract(abi);
 var myContractInstance = MyContract.at("0xbF589F8D0AfcE3f761FDb42efA9584951f82463f");
 
+/*
+if(!web3.isConnected())
+  showInfo("No estás conectado a Ethereum", true);
+else if(web3.eth.getBlock(0).hash == "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")
+  showInfo("Conectado a Ethereum mediante Mainnet", true);
+else if(web3.eth.getBlock(0).hash == "0x0cd786a2425d16f152c658316c423e6ce1181e15c3295826d7c9904cba9ce303")
+  showInfo("Conectado a Ethereum mediante Testnet", false);
+else
+  showInfo("Conectado a Ethereum mediante red desconocida", true);
+*/
+
+// DB
+var db;
+
 $(function() {
   // Set a default account
   web3.eth.defaultAccount = web3.eth.accounts[0];
@@ -27,6 +41,9 @@ function loadEventInfo() {
 
   var d = new Date(myContractInstance._endDate() * 1000);
   $("#endDate").text(d.toLocaleString());
+
+  $("#eventName").text(db.name);
+  $("#eventDescription").text(db.description);
 }
 
 function loadWalletInfo() {
@@ -39,7 +56,11 @@ function loadWalletInfo() {
       // Mis tickets
       $('#myTicketsTable > tbody:last-child').append(
       '<tr>'+
-        '<td><a href="#" onclick="loadTicketInfo('+ i +')">'+ i +'</a></td>'+
+        '<td>'+
+          '<a href="#" onclick="loadTicketInfo('+ i +')">'+
+            '('+ i +') <img src='+ db.tickets[i].thumb +'>'+
+          '</a>'+
+        '</td>'+
       '</tr>'
       );
     }
@@ -48,6 +69,8 @@ function loadWalletInfo() {
 
 function loadTicketInfo(id) {
   $("#ticketId").text(id);
+  $("#ticketImg").attr("src", db.tickets[id].img);
+  $("#ticketDescription").html(db.tickets[id].description.replace(/\n/g, "<br />"));
   $("#used").text(myContractInstance.getTicket(id)[1]);
 }
 

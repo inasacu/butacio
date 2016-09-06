@@ -18,18 +18,20 @@
 
       <div class="col-md-3 screen">
         <h3>Evento</h3>
+        <b id="eventName"></b>
         <ul>
-          <li><b>Creador:<b> <span id="eventOwner"></span></li>
-          <li><b>Número de tickets:<b> <span id="numTickets"></span></li>
-          <li><b>Fecha:<b> <span id="endDate"></span></li>
+          <li><b>Creador:</b> <span id="eventOwner"></span></li>
+          <li><b>Número de tickets:</b> <span id="numTickets"></span></li>
+          <li><b>Fecha:</b> <span id="endDate"></span></li>
         </ul>
+        <p id="eventDescription"></p>
       </div>
 
       <div class="col-md-3 screen">
         <h3>Wallet</h3>
         <ul>
-          <li><b>Dirección:<b> <span id="address"></span></li>
-          <li><b>Balance:<b> <span id="balance"></span></li>
+          <li><b>Dirección:</b> <span id="address"></span></li>
+          <li><b>Balance:</b> <span id="balance"></span></li>
         </ul>
 
         <table class="table table-striped" id="myTicketsTable">
@@ -37,11 +39,11 @@
             <th>Mis tickets</th>
           </thead>
           <tbody>
-            <tr onclick='alert("a")'>
-              <td>n</td>
+            <tr>
+              <td><a href="#" onclick="loadTicketInfo(0)">(n) <img src="./assets/example-thumb.png"></a></td>
             </tr>
             <tr>
-              <td>n+m</td>
+              <td><a href="#" onclick="loadTicketInfo(1)">(m) <img src="./assets/example-thumb.png"></a></td>
             </tr>
           </tbody>
         </table>
@@ -49,9 +51,11 @@
 
       <div class="col-md-3 screen">
         <h3>Ticket</h3>
+        <img src="" id="ticketImg">
         <ul>
-          <li><b>ID:<b> <span id="ticketId"></span></li>
-          <li><b>Usado:<b> <span id="used"></span></li>
+          <li><b>ID:</b> <span id="ticketId"></span></li>
+          <li><b>Usado:</b> <span id="used"></span></li>
+          <li><b>Descripción:</b><br /><span id="ticketDescription"></span></li>
         </ul>
 
         <div class="form-group">
@@ -107,6 +111,7 @@
   </div>
 
   <!-- JS -->
+  <script src="./fakedb.js"></script>
   <script src="./lib/jquery-2.0.0.min.js"></script>
   <script src="./lib/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
   <script src="./lib/web3.min.js"></script>
